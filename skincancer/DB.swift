@@ -5,15 +5,15 @@ import SQLite3
 
 class DB {
   let dbPointer : OpaquePointer?
-  static let dbNAME = "skincancerApp.db"
-  static let dbVERSION = 1
+  static let dbName = "skincancerApp.db"
+  static let dbVersion = 1
 
-  static let skinCancerTABLENAME = "SkinCancer"
+  static let skinCancerTableName = "SkinCancer"
   static let skinCancerID = 0
-  static let skinCancerCOLS : [String] = ["TableId", "id", "dates", "images", "outcome"]
-  static let skinCancerNUMBERCOLS = 0
+  static let skinCancerCols : [String] = ["TableId", "id", "dates", "images", "outcome"]
+  static let skinCancerNumberCols = 0
 
-  static let skinCancerCREATESCHEMA =
+  static let skinCancerCreateSchema =
     "create table SkinCancer (TableId integer primary key autoincrement" + 
         ", id VARCHAR(50) not null"  +
         ", dates VARCHAR(50) not null"  +
@@ -27,7 +27,7 @@ class DB {
   func createDatabase() throws
   { do 
     { 
-    try createTable(table: DB.skinCancerCREATESCHEMA)
+    try createTable(table: DB.skinCancerCreateSchema)
       print("Created database")
     }
     catch { print("Errors: " + errorMessage) }
@@ -119,45 +119,14 @@ class DB {
   }
 
   func listSkinCancer() -> [SkinCancerVO]
-  { var res : [SkinCancerVO] = [SkinCancerVO]()
-    let statement = "SELECT * FROM SkinCancer "
-    let queryStatement = try? prepareStatement(sql: statement)
-    if queryStatement == nil { 
-    	return res
-    }
-    
-    while (sqlite3_step(queryStatement) == SQLITE_ROW)
-    { //let id = sqlite3_column_int(queryStatement, 0)
-      let skinCancervo = SkinCancerVO()
-      
-    guard let queryResultSkinCancerCOLID = sqlite3_column_text(queryStatement, 1) 
-    else { return res } 
-    let id = String(cString: queryResultSkinCancerCOLID) 
-    skinCancervo.setId(x: id) 
-
-    guard let queryResultSkinCancerCOLDATES = sqlite3_column_text(queryStatement, 2) 
-    else { return res } 
-    let dates = String(cString: queryResultSkinCancerCOLDATES) 
-    skinCancervo.setDates(x: dates) 
-
-    guard let queryResultSkinCancerCOLIMAGES = sqlite3_column_text(queryStatement, 3) 
-    else { return res } 
-    let images = String(cString: queryResultSkinCancerCOLIMAGES) 
-    skinCancervo.setImages(x: images) 
-
-    guard let queryResultSkinCancerCOLOUTCOME = sqlite3_column_text(queryStatement, 4) 
-    else { return res } 
-    let outcome = String(cString: queryResultSkinCancerCOLOUTCOME) 
-    skinCancervo.setOutcome(x: outcome) 
-
-      res.append(skinCancervo)
-    }
-    sqlite3_finalize(queryStatement)
-    return res
+  { 
+  	let statement = "SELECT * FROM SkinCancer "
+  	return setDataSkinCancer(statement: statement)
   }
 
   func createSkinCancer(skinCancervo : SkinCancerVO) throws
   { let insertSQL : String = "INSERT INTO SkinCancer (id, dates, images, outcome) VALUES (" 
+
      + "'" + skinCancervo.getId() + "'" + "," 
      + "'" + skinCancervo.getDates() + "'" + "," 
      + "'" + skinCancervo.getImages() + "'" + "," 
@@ -171,131 +140,27 @@ class DB {
   }
 
   func searchBySkinCancerid(val : String) -> [SkinCancerVO]
-	  { var res : [SkinCancerVO] = [SkinCancerVO]()
-	    let statement : String = "SELECT * FROM SkinCancer WHERE id = " + "'" + val + "'" 
-	    let queryStatement = try? prepareStatement(sql: statement)
-	    
-	    while (sqlite3_step(queryStatement) == SQLITE_ROW)
-	    { //let id = sqlite3_column_int(queryStatement, 0)
-	      let skinCancervo = SkinCancerVO()
-	      
-	      guard let queryResultSkinCancerCOLID = sqlite3_column_text(queryStatement, 1)
-		      else { return res }	      
-		      let id = String(cString: queryResultSkinCancerCOLID)
-		      skinCancervo.setId(x: id)
-	      guard let queryResultSkinCancerCOLDATES = sqlite3_column_text(queryStatement, 2)
-		      else { return res }	      
-		      let dates = String(cString: queryResultSkinCancerCOLDATES)
-		      skinCancervo.setDates(x: dates)
-	      guard let queryResultSkinCancerCOLIMAGES = sqlite3_column_text(queryStatement, 3)
-		      else { return res }	      
-		      let images = String(cString: queryResultSkinCancerCOLIMAGES)
-		      skinCancervo.setImages(x: images)
-	      guard let queryResultSkinCancerCOLOUTCOME = sqlite3_column_text(queryStatement, 4)
-		      else { return res }	      
-		      let outcome = String(cString: queryResultSkinCancerCOLOUTCOME)
-		      skinCancervo.setOutcome(x: outcome)
-
-	      res.append(skinCancervo)
-	    }
-	    sqlite3_finalize(queryStatement)
-	    return res
+	  { 
+	  	let statement : String = "SELECT * FROM SkinCancer WHERE id = " + "'" + val + "'" 
+	  	return setDataSkinCancer(statement: statement)
 	  }
 	  
   func searchBySkinCancerdates(val : String) -> [SkinCancerVO]
-	  { var res : [SkinCancerVO] = [SkinCancerVO]()
-	    let statement : String = "SELECT * FROM SkinCancer WHERE dates = " + "'" + val + "'" 
-	    let queryStatement = try? prepareStatement(sql: statement)
-	    
-	    while (sqlite3_step(queryStatement) == SQLITE_ROW)
-	    { //let id = sqlite3_column_int(queryStatement, 0)
-	      let skinCancervo = SkinCancerVO()
-	      
-	      guard let queryResultSkinCancerCOLID = sqlite3_column_text(queryStatement, 1)
-		      else { return res }	      
-		      let id = String(cString: queryResultSkinCancerCOLID)
-		      skinCancervo.setId(x: id)
-	      guard let queryResultSkinCancerCOLDATES = sqlite3_column_text(queryStatement, 2)
-		      else { return res }	      
-		      let dates = String(cString: queryResultSkinCancerCOLDATES)
-		      skinCancervo.setDates(x: dates)
-	      guard let queryResultSkinCancerCOLIMAGES = sqlite3_column_text(queryStatement, 3)
-		      else { return res }	      
-		      let images = String(cString: queryResultSkinCancerCOLIMAGES)
-		      skinCancervo.setImages(x: images)
-	      guard let queryResultSkinCancerCOLOUTCOME = sqlite3_column_text(queryStatement, 4)
-		      else { return res }	      
-		      let outcome = String(cString: queryResultSkinCancerCOLOUTCOME)
-		      skinCancervo.setOutcome(x: outcome)
-
-	      res.append(skinCancervo)
-	    }
-	    sqlite3_finalize(queryStatement)
-	    return res
+	  { 
+	  	let statement : String = "SELECT * FROM SkinCancer WHERE dates = " + "'" + val + "'" 
+	  	return setDataSkinCancer(statement: statement)
 	  }
 	  
   func searchBySkinCancerimages(val : String) -> [SkinCancerVO]
-	  { var res : [SkinCancerVO] = [SkinCancerVO]()
-	    let statement : String = "SELECT * FROM SkinCancer WHERE images = " + "'" + val + "'" 
-	    let queryStatement = try? prepareStatement(sql: statement)
-	    
-	    while (sqlite3_step(queryStatement) == SQLITE_ROW)
-	    { //let id = sqlite3_column_int(queryStatement, 0)
-	      let skinCancervo = SkinCancerVO()
-	      
-	      guard let queryResultSkinCancerCOLID = sqlite3_column_text(queryStatement, 1)
-		      else { return res }	      
-		      let id = String(cString: queryResultSkinCancerCOLID)
-		      skinCancervo.setId(x: id)
-	      guard let queryResultSkinCancerCOLDATES = sqlite3_column_text(queryStatement, 2)
-		      else { return res }	      
-		      let dates = String(cString: queryResultSkinCancerCOLDATES)
-		      skinCancervo.setDates(x: dates)
-	      guard let queryResultSkinCancerCOLIMAGES = sqlite3_column_text(queryStatement, 3)
-		      else { return res }	      
-		      let images = String(cString: queryResultSkinCancerCOLIMAGES)
-		      skinCancervo.setImages(x: images)
-	      guard let queryResultSkinCancerCOLOUTCOME = sqlite3_column_text(queryStatement, 4)
-		      else { return res }	      
-		      let outcome = String(cString: queryResultSkinCancerCOLOUTCOME)
-		      skinCancervo.setOutcome(x: outcome)
-
-	      res.append(skinCancervo)
-	    }
-	    sqlite3_finalize(queryStatement)
-	    return res
+	  { 
+	  	let statement : String = "SELECT * FROM SkinCancer WHERE images = " + "'" + val + "'" 
+	  	return setDataSkinCancer(statement: statement)
 	  }
 	  
   func searchBySkinCanceroutcome(val : String) -> [SkinCancerVO]
-	  { var res : [SkinCancerVO] = [SkinCancerVO]()
-	    let statement : String = "SELECT * FROM SkinCancer WHERE outcome = " + "'" + val + "'" 
-	    let queryStatement = try? prepareStatement(sql: statement)
-	    
-	    while (sqlite3_step(queryStatement) == SQLITE_ROW)
-	    { //let id = sqlite3_column_int(queryStatement, 0)
-	      let skinCancervo = SkinCancerVO()
-	      
-	      guard let queryResultSkinCancerCOLID = sqlite3_column_text(queryStatement, 1)
-		      else { return res }	      
-		      let id = String(cString: queryResultSkinCancerCOLID)
-		      skinCancervo.setId(x: id)
-	      guard let queryResultSkinCancerCOLDATES = sqlite3_column_text(queryStatement, 2)
-		      else { return res }	      
-		      let dates = String(cString: queryResultSkinCancerCOLDATES)
-		      skinCancervo.setDates(x: dates)
-	      guard let queryResultSkinCancerCOLIMAGES = sqlite3_column_text(queryStatement, 3)
-		      else { return res }	      
-		      let images = String(cString: queryResultSkinCancerCOLIMAGES)
-		      skinCancervo.setImages(x: images)
-	      guard let queryResultSkinCancerCOLOUTCOME = sqlite3_column_text(queryStatement, 4)
-		      else { return res }	      
-		      let outcome = String(cString: queryResultSkinCancerCOLOUTCOME)
-		      skinCancervo.setOutcome(x: outcome)
-
-	      res.append(skinCancervo)
-	    }
-	    sqlite3_finalize(queryStatement)
-	    return res
+	  { 
+	  	let statement : String = "SELECT * FROM SkinCancer WHERE outcome = " + "'" + val + "'" 
+	  	return setDataSkinCancer(statement: statement)
 	  }
 	  
 
@@ -303,9 +168,9 @@ class DB {
   { var updateStatement: OpaquePointer?
     let statement : String = "UPDATE SkinCancer SET " 
     + " dates = '"+skinCancervo.getDates() + "'" 
- + "," 
+    + "," 
     + " images = '"+skinCancervo.getImages() + "'" 
- + "," 
+    + "," 
     + " outcome = '"+skinCancervo.getOutcome() + "'" 
     + " WHERE id = '" + skinCancervo.getId() + "'" 
 
@@ -327,5 +192,36 @@ class DB {
   deinit
   { sqlite3_close(self.dbPointer) }
 
+  func setDataSkinCancer(statement: String) -> [SkinCancerVO] {
+          var res : [SkinCancerVO] = [SkinCancerVO]()
+          let queryStatement = try? prepareStatement(sql: statement)
+          
+          while (sqlite3_step(queryStatement) == SQLITE_ROW)
+          { 
+            let skinCancervo = SkinCancerVO()
+            
+	      guard let queryResultSkinCancerColId = sqlite3_column_text(queryStatement, 1)
+			      else { return res }	      
+			      let id = String(cString: queryResultSkinCancerColId)
+			      skinCancervo.setId(x: id)
+	      guard let queryResultSkinCancerColDates = sqlite3_column_text(queryStatement, 2)
+			      else { return res }	      
+			      let dates = String(cString: queryResultSkinCancerColDates)
+			      skinCancervo.setDates(x: dates)
+	      guard let queryResultSkinCancerColImages = sqlite3_column_text(queryStatement, 3)
+			      else { return res }	      
+			      let images = String(cString: queryResultSkinCancerColImages)
+			      skinCancervo.setImages(x: images)
+	      guard let queryResultSkinCancerColOutcome = sqlite3_column_text(queryStatement, 4)
+			      else { return res }	      
+			      let outcome = String(cString: queryResultSkinCancerColOutcome)
+			      skinCancervo.setOutcome(x: outcome)
+  
+            res.append(skinCancervo)
+          }
+          sqlite3_finalize(queryStatement)
+          return res
+      }
+      
 }
 
